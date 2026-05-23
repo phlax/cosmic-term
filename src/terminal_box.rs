@@ -1127,6 +1127,7 @@ where
                 text,
                 modifiers,
                 key,
+                modified_key,
                 ..
             }) if state.is_focused => {
                 for key_bind in self.key_binds.keys() {
