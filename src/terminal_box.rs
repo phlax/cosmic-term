@@ -1173,11 +1173,11 @@ where
                         }
                     }
                     (false, true, _, true) => {
-                        //This is normally Ctrl+Minus, but since that
-                        //is taken by zoom, we send that code for
-                        //Ctrl+Underline instead, like xterm and
-                        //gnome-terminal
-                        if *key == Key::Character("_".into()) {
+                        // Ctrl+Shift+<key>. On US layouts, Shift+- yields _, which
+                        // should send C-_ (0x1F) like xterm/gnome-terminal. Check the
+                        // shift-modified key so this works regardless of where '_'
+                        // lives on the user's keyboard layout.
+                        if *modified_key == Key::Character("_".into()) {
                             terminal.input_scroll(b"\x1F".as_slice());
                             shell.capture_event();
                         }
