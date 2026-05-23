@@ -1745,7 +1745,7 @@ fn edge_scroll_adjustment(
         };
         let overshoot_delta = overshoot - previous_overshoot;
         let forced = if forced_increment > 0.0 {
-            forced_increment * overshoot.max(1.0)
+            forced_increment * overshoot.clamp(1.0, 3.0)
         } else {
             0.0
         };
@@ -1767,7 +1767,7 @@ fn edge_scroll_adjustment(
         };
         let overshoot_delta = overshoot - previous_overshoot;
         let forced = if forced_increment > 0.0 {
-            forced_increment * overshoot.max(1.0)
+            forced_increment * overshoot.clamp(1.0, 3.0)
         } else {
             0.0
         };
@@ -2149,5 +2149,24 @@ mod tests {
         );
         assert_eq!(delta, 1);
         assert!((remainder - 0.25).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn edge_scroll_forced_increment_is_capped_by_overshoot() {
+        // Very large overshoot (pointer far past edge) with forced_increment = 1.0
+        // should not produce an unbounded delta — it should be capped by clamp(1.0, 3.0).
+        let (delta, _, _, _, _) = edge_scroll_adjustment(
+            -1000.0, // huge overshoot: -1000 / 20 = 50 cells
+            BUFFER_HEIGHT,
+            CELL_HEIGHT,
+            MAX_ROW,
+            0.0,
+            EdgeScrollDirection::Top,
+            50.0, // same as current overshoot so overshoot_delta == 0
+            1.0,
+        );
+        // With the clamp at 3.0, forced contribution is 1.0 * 3.0 = 3.0,
+        // so delta should be 3, not 50.
+        assert_eq!(delta, 3);
     }
 }
